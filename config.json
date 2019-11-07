@@ -1,0 +1,180 @@
+{
+    "devices": {
+        "deshumidificateur": {
+            "protocol": [ "kaku_switch" ],
+            "id": [{
+                "id": 100,
+                "unit": 3
+            }],
+            "state": "off"
+        },
+        "fan": {
+            "protocol": [ "kaku_switch" ],
+            "id": [{
+                "id": 101,
+                "unit": 4
+            }],
+            "state": "off"
+        },
+        "contact_sechage": {
+            "protocol": [ "kaku_screen" ],
+            "id": [{
+                "id": 55402496,
+                "unit": 1
+            }],
+            "state": "down"
+        },
+        "contact_standard": {
+            "protocol": [ "kaku_screen" ],
+            "id": [{
+                "id": 55402496,
+                "unit": 2
+            }],
+            "state": "up"
+        },
+        "weather": {
+            "protocol": [ "tfa" ],
+            "id": [{
+                "id": 16,
+                "channel": 1
+            }],
+            "temperature": 13.38,
+            "humidity": 59.00,
+            "battery": 0
+        },
+        "humidite_cible": {
+            "protocol": [ "generic_dimmer" ],
+            "id": [{
+                "id": 110
+            }],
+            "state": "on",
+            "dimlevel": 55
+        },
+        "label_sechage": {
+            "protocol": [ "generic_label" ],
+            "id": [{
+                "id": 111
+            }],
+            "label": "Humidite",
+            "color": "blue"
+        }
+    },
+    "rules": {
+        "humidity-greater": {
+            "rule": "IF (weather.humidity >= humidite_cible.dimlevel) AND contact_standard.state == up THEN switch DEVICE deshumidificateur TO on",
+            "active": 1
+        },
+        "humidity-lower": {
+            "rule": "IF (weather.humidity < humidite_cible.dimlevel - 3) AND contact_sechage.state == down THEN switch DEVICE fan AND deshumidificateur TO off",
+            "active": 1
+        },
+        "sechage-greater": {
+            "rule": "IF (weather.humidity >= humidite_cible.dimlevel) AND contact_sechage.state  == up THEN switch DEVICE fan AND deshumidificateur TO on",
+            "active": 1
+        },
+        "sechage-lower": {
+            "rule": "IF (weather.humidity < (humidite_cible.dimlevel - 10)) AND contact_standard.state == down AND contact_sechage.state == up THEN switch DEVICE fan AND deshumidificateur TO off AND switch DEVICE contact_sechage TO down AND switch DEVICE contact_standard TO up",
+            "active": 1
+        },
+        "sechage-on": {
+            "rule": "IF contact_sechage.state == up THEN switch DEVICE contact_standard TO down AND label DEVICE label_sechage TO Sechage COLOR green",
+            "active": 1
+        },
+        "deshumidification-on": {
+            "rule": "IF contact_standard.state == up THEN switch DEVICE contact_sechage TO down AND label DEVICE label_sechage TO Humidite COLOR blue",
+            "active": 1
+        },
+        "sechage-off": {
+            "rule": "IF contact_sechage.state == down AND contact_standard.state == down THEN label DEVICE label_sechage TO Stop COLOR red AND switch DEVICE fan AND deshumidificateur TO off",
+            "active": 1
+        },
+        "fan-off": {
+            "rule": "IF contact_sechage.state == down THEN switch DEVICE fan TO off",
+            "active": 1
+        }
+    },
+    "gui": {
+        "label_sechage": {
+            "name": "Statut du sechage",
+            "group": [ "Buanderie" ],
+            "media": [ "all" ]
+        },
+        "humidite_cible": {
+            "name": "Humidité cible",
+            "group": [ "Buanderie" ],
+            "media": [ "all" ],
+            "dimlevel-minimum": 30,
+            "dimlevel-maximum": 80
+        },
+        "contact_sechage": {
+            "name": "Sechage",
+            "group": [ "Buanderie" ],
+            "media": [ "all" ],
+            "readonly": 0
+        },
+        "contact_standard": {
+            "name": "Humidité max",
+            "group": [ "Buanderie" ],
+            "media": [ "all" ],
+            "readonly": 0
+        },
+        "fan": {
+            "name": "Ventilateur",
+            "group": [ "Buanderie" ],
+            "media": [ "all" ],
+            "readonly": 0
+        },
+        "deshumidificateur": {
+            "name": "Déshumidificateur",
+            "group": [ "Buanderie" ],
+            "media": [ "all" ],
+            "readonly": 0
+        },
+        "weather": {
+            "name": "Station météo",
+            "group": [ "Buanderie" ],
+            "media": [ "all" ]
+        }
+    },
+    "settings": {
+        "log-level": 6,
+        "pid-file": "/var/run/pilight.pid",
+        "log-file": "/var/log/pilight.log",
+        "standalone": 1,
+        "webserver-enable": 1,
+        "webserver-root": "/usr/local/share/pilight/webgui",
+        "webserver-http-port": 5001,
+        "webserver-https-port": 5002,
+        "webserver-cache": 1,
+        "whitelist": "",
+        "gpio-platform": "rasåpberrypi3"
+    },
+    "hardware": {
+        "433gpio": {
+            "sender": 0,
+            "receiver": 2
+        }
+    },
+    "registry": {
+        "webserver": {
+            "ssl": {
+                "certificate": {
+                    "location": "/etc/pilight/pilight.pem"
+                }
+            }
+        },
+        "pilight": {
+            "version": {
+                "current": "8.1.5"
+            }
+        },
+        "hardware": {
+            "RF433": {
+                "mingaplen": 4420,
+                "maxgaplen": 72900,
+                "minrawlen": 26,
+                "maxrawlen": 400
+            }
+        }
+    }
+}
