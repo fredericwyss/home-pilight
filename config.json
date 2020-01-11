@@ -35,7 +35,7 @@
         "weather": {
             "protocol": [ "tfa" ],
             "id": [{
-                "id": 16,
+                "id": 35,
                 "channel": 1
             }],
             "temperature": 13.38,
